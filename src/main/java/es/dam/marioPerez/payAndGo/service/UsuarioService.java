@@ -5,30 +5,31 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import es.dam.marioPerez.payAndGo.model.Categoria;
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.repository.UsuarioRepository;
-import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
 
 @Service
 public class UsuarioService {
 
 	private static final Logger LOGGER = LogManager.getLogger(CategoriaService.class);
 
+	@Autowired
     private UsuarioRepository usuarioRepository;
 	
+    @Autowired
     private PasswordEncoder encoder;
     
-    public UsuarioService (UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
-        this.usuarioRepository = usuarioRepository;
-        this.encoder = encoder;
-    }
+//    public UsuarioService (UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
+//        this.usuarioRepository = usuarioRepository;
+//        this.encoder = encoder;
+//    }
     
     
     public Usuario registrar(Usuario usuario) {

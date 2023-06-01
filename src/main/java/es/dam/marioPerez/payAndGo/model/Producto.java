@@ -26,7 +26,7 @@ public class Producto {
 	private boolean cocina;
 	
 	@ManyToOne
-    @JoinColumn(name="categoriaId", nullable=false)
+    @JoinColumn(name="categoria_id", nullable=false)
 	private Categoria categoria;
 	
 	@OneToMany(mappedBy = "producto")

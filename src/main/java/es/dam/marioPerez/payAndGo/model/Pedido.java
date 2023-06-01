@@ -24,7 +24,7 @@ public class Pedido {
 	private long id;
 	
 	@ManyToOne
-    @JoinColumn(name="mesaId", nullable=false)
+    @JoinColumn(name="mesa_id", nullable=false)
 	private Mesa mesa;
 	
 	@OneToMany(mappedBy = "pedido")

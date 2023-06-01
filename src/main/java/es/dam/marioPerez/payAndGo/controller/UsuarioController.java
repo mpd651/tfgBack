@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import es.dam.marioPerez.payAndGo.model.Categoria;
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.service.UsuarioService;
 import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
@@ -33,16 +33,9 @@ public class UsuarioController {
 	
 	private static final Logger LOGGER = LogManager.getLogger(UsuarioController.class);
 
-	
+	@Autowired
 	private UsuarioService usuarioService;
-	
-    private PasswordEncoder encoder;
-    
-
-    public UsuarioController(UsuarioService service, PasswordEncoder encoder) {
-        this.usuarioService = service;
-        this.encoder = encoder;
-    }
+   
     
     
     @PostMapping("/registrar")
@@ -76,7 +69,7 @@ public class UsuarioController {
     	Usuario usuario1 = new Usuario();
     	usuario1.setUserName(usuario.getUserName());
     	usuario1.setRol(UsuarioRol.CLIENTE);
-    	usuario1.setPassword(encoder.encode(usuario.getPassword()));
+    	usuario1.setPassword(usuario1.getPassword());
     	usuario1.setNombre(usuario.getNombre());
     	usuario1.setApellidos(usuario.getApellidos());
     	

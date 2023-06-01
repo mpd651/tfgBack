@@ -8,12 +8,14 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import es.dam.marioPerez.payAndGo.model.ActualizacionPedido;
 import es.dam.marioPerez.payAndGo.model.Pedido;
 import es.dam.marioPerez.payAndGo.repository.ActualizacionPedidoRepository;
 import es.dam.marioPerez.payAndGo.repository.PedidoRepository;
 
+@Service
 public class ActualizacionPedidoService {
 
 	private static final Logger LOGGER = LogManager.getLogger(ActualizacionPedidoService.class);

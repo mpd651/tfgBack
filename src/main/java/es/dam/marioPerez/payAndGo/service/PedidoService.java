@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import es.dam.marioPerez.payAndGo.model.ActualizacionPedido;
 import es.dam.marioPerez.payAndGo.model.Mesa;
@@ -21,6 +22,7 @@ import es.dam.marioPerez.payAndGo.repository.UsuarioRepository;
 import es.dam.marioPerez.payAndGo.utils.ActualizacionEnum;
 import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
 
+@Service
 public class PedidoService {
 
 	private static final Logger LOGGER = LogManager.getLogger(PedidoService.class);

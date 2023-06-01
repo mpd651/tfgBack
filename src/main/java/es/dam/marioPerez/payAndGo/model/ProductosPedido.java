@@ -16,14 +16,14 @@ public class ProductosPedido {
 	
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
-    Long id;
+    long id;
     
     @ManyToOne
-    @JoinColumn(name = "productoId")
+    @JoinColumn(name = "producto_id")
     private Producto producto;
     
     @ManyToOne
-    @JoinColumn(name = "pedidoId")
+    @JoinColumn(name = "pedido_id")
     private Pedido pedido;
     
     private boolean servido;

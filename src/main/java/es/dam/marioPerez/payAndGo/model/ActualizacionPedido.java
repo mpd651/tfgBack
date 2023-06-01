@@ -20,12 +20,12 @@ public class ActualizacionPedido {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
 	private long id;
     
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "pedidoId", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "pedido_id", nullable = false)
     private Pedido pedido;
     
     @ManyToOne
-    @JoinColumn(name = "usuarioId", nullable = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
     
     private LocalDateTime fecha;

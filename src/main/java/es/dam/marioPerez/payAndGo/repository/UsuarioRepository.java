@@ -14,7 +14,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
     
 	public Usuario findByuserName(String userName);
 	
-	public Boolean existsByUsername(String username);
+	public Boolean existsByUserName(String userName);
 	
 	@Query("SELECT u FROM Usuario u WHERE u.rol = :rol")
 	public Page<Usuario> findUsuariosByRol(@Param("rol")String rol, Pageable pageable);
