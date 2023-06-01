@@ -1,5 +1,6 @@
 package es.dam.marioPerez.payAndGo.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,6 +15,7 @@ public class Mesa {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private long id;
 	
+	@Column(name = "numero_mesa")
 	private int numeroMesa;
 		
 

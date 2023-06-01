@@ -21,6 +21,7 @@ public class ActualizacionPedido {
 	private long id;
     
     @ManyToOne(optional = false)
+    @JoinColumn(name = "pedidoId", nullable = false)
     private Pedido pedido;
     
     @ManyToOne

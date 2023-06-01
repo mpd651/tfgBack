@@ -2,25 +2,27 @@ package es.dam.marioPerez.payAndGo.model;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
+import javax.persistence.Table;
 
 @Entity
+@Table(name="productos_pedido")
 public class ProductosPedido {
-
-    @EmbeddedId
-    ProductosPedidoKey id;
+	
+    @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    Long id;
     
     @ManyToOne
-    @MapsId("productoId")
     @JoinColumn(name = "productoId")
     private Producto producto;
     
     @ManyToOne
-    @MapsId("pedidoId")
     @JoinColumn(name = "pedidoId")
     private Pedido pedido;
     
@@ -46,11 +48,12 @@ public class ProductosPedido {
 		this.hora = hora;
 	}
 
-	public ProductosPedidoKey getId() {
+
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(ProductosPedidoKey id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
