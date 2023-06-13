@@ -81,8 +81,8 @@ public class UsuarioController {
 				.body(usuarioBD);
     }
     
-    @GetMapping("/login")
-    public ResponseEntity<Boolean> login(@RequestBody Usuario usuario) {
+    @PostMapping("/login")
+    public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
     	
     	return ResponseEntity
 				.status(HttpStatus.CREATED)

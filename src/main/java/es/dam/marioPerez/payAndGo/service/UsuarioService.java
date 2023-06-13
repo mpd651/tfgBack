@@ -56,17 +56,17 @@ public class UsuarioService {
         return usuarioRepository.save(usuarioDB);
     }
     
-    public boolean login(Usuario usuario) {
+    public Usuario login(Usuario usuario) {
     	Usuario usuarioDB = usuarioRepository.findByuserName(usuario.getUserName());
     	
     	if (usuarioDB == null) {
-    		return false;
+    		throw new RuntimeException("Usuario no encontrado");
     	}
     	
-        if (encoder.matches(usuario.getPassword(), usuarioDB.getPassword()) && usuario.getRol().equals(usuarioDB.getRol())) {
-            return true;
+        if (!encoder.matches(usuario.getPassword(), usuarioDB.getPassword()) && usuario.getRol().equals(usuarioDB.getRol())) {
+        	throw new RuntimeException("Password incorrecto");
         }
-        return false;
+        return usuarioDB;
     	   
     }
     

@@ -15,12 +15,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
-        http.authorizeRequests()
-                .antMatchers("/studentInfo").authenticated()
-                .antMatchers("/register").permitAll()
-                .antMatchers("/getStudentRoles").hasAuthority("ROLE_WRITE")
-                .and()
-                .httpBasic();
+//        http.authorizeRequests()
+//                .antMatchers("/studentInfo").authenticated()
+//                .antMatchers("/register").permitAll()
+//                .antMatchers("/getStudentRoles").hasAuthority("ROLE_WRITE")
+//                .and()
+//                .httpBasic();
     }
 
 	@Bean
