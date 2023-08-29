@@ -1,36 +1,24 @@
-package es.dam.marioPerez.payAndGo.model;
+package es.dam.marioPerez.payAndGo.dto;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import es.dam.marioPerez.payAndGo.model.Pedido;
+import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.utils.ActualizacionEnum;
 
-@Entity
-@Table(name="actualizacion_pedido")
-public class ActualizacionPedido {
+public class ActualizacionesPedidoDto {
 
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
 	private long id;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pedido_id", nullable = false)
-    @JsonIgnore
-    private Pedido pedido;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
-    @JsonIgnore
+        
     private Usuario usuario;
     
     private LocalDateTime fecha;
@@ -43,14 +31,6 @@ public class ActualizacionPedido {
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public Pedido getPedido() {
-		return pedido;
-	}
-
-	public void setPedido(Pedido pedido) {
-		this.pedido = pedido;
 	}
 
 

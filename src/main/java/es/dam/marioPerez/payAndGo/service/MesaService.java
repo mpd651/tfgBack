@@ -1,12 +1,11 @@
 package es.dam.marioPerez.payAndGo.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import es.dam.marioPerez.payAndGo.model.Mesa;
@@ -24,10 +23,10 @@ public class MesaService {
         return mesaRepository.save(mesa);
 	}
 	
-	public Page<Mesa> obtenerTodasLasMesas (Pageable pageable){
+	public List<Mesa> obtenerTodasLasMesas (){
 		LOGGER.trace("Accediendo a la lectura de mesas");
 		
-		return mesaRepository.findAll(pageable);
+		return mesaRepository.findMesasActivas();
 	}
 	
 	public Optional<Mesa> obtenerMesaPorId(long id) {
@@ -52,7 +51,15 @@ public class MesaService {
 	
 	public void eliminarMesa(long id) {
 		LOGGER.trace("Eliminando la mesa");
+				
+		Optional<Mesa> mesaOpt = mesaRepository.findById(id);
 		
-		mesaRepository.deleteById(id);
+		if (mesaOpt.isEmpty()) {
+			throw new RuntimeException("La mesa no existe");
+		}
+		Mesa mesaBD = mesaOpt.get();
+		mesaBD.setBorrado(true);
+		mesaRepository.save(mesaBD);
+
 	}
 }

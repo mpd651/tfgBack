@@ -16,6 +16,8 @@ public class Categoria {
 	
 	private String nombre;
 	
+	private boolean borrado;
+	
 	public long getId() {
 		return id;
 	}
@@ -31,6 +33,15 @@ public class Categoria {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
+
+	public boolean isBorrado() {
+		return borrado;
+	}
+
+	public void setBorrado(boolean borrado) {
+		this.borrado = borrado;
+	}
+	
 	
 	
 }

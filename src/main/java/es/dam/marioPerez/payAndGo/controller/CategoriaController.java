@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.dam.marioPerez.payAndGo.model.Categoria;
 import es.dam.marioPerez.payAndGo.service.CategoriaService;
+import es.dam.marioPerez.payAndGo.service.ProductoService;
 
 @RestController
 @RequestMapping(path = "/api/v1/categoria")
@@ -33,6 +34,9 @@ public class CategoriaController {
 
 	@Autowired
 	private CategoriaService categoriaService;
+	
+	@Autowired
+	private ProductoService productoService;
 	
 	@PostMapping
 	public ResponseEntity<Categoria> crearCategoria(@Validated @RequestBody Categoria categoria) {
@@ -47,15 +51,21 @@ public class CategoriaController {
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<Categoria>> obtenerTodasLasCategorias(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-		
-		Pageable pageable = PageRequest.of(page, size);
+	public ResponseEntity<List<Categoria>> obtenerTodasLasCategorias(){
 		
 		LOGGER.trace("Accediendo al controlador de obtencion de Categorias disponibles");
 		
-		List<Categoria> categorias = categoriaService.obtenerTodasLasCategorias(pageable).getContent();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(categoriaService.obtenerTodasLasCategorias());
+	}
+	
+	@GetMapping("/numeroProductos")
+	public ResponseEntity<Integer> obtenerProductosPorCategoria(@RequestParam(name="id") long id){
+		
+		LOGGER.trace("Accediendo al controlador de obtencion de productos por categoría");
+		
+		int productosPorCategoria = productoService.obtenerNumeroProductosPorCategoria(id);
 
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(categorias);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productosPorCategoria);
 	}
 	
 	@GetMapping("/id")

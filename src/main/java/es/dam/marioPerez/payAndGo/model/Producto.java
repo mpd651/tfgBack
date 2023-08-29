@@ -11,6 +11,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 @Entity
 @Table(name="productos")
 public class Producto {
@@ -22,15 +26,15 @@ public class Producto {
 	private String nombre;
 	
 	private float precio;
-	
-	private boolean cocina;
-	
+		
 	@ManyToOne
     @JoinColumn(name="categoria_id", nullable=false)
 	private Categoria categoria;
 	
 	@OneToMany(mappedBy = "producto")
 	List<ProductosPedido> productosPedidos;
+	
+	private boolean borrado;
 
 	public long getId() {
 		return id;
@@ -56,14 +60,6 @@ public class Producto {
 		this.precio = precio;
 	}
 
-	public boolean isCocina() {
-		return cocina;
-	}
-
-	public void setCocina(boolean cocina) {
-		this.cocina = cocina;
-	}
-
 	public Categoria getCategoria() {
 		return categoria;
 	}
@@ -79,6 +75,16 @@ public class Producto {
 	public void setProductosPedidos(List<ProductosPedido> productosPedidos) {
 		this.productosPedidos = productosPedidos;
 	}
+
+	public boolean isBorrado() {
+		return borrado;
+	}
+
+	public void setBorrado(boolean borrado) {
+		this.borrado = borrado;
+	}
+	
+	
 	
 	
 }

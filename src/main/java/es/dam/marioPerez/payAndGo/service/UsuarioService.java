@@ -1,12 +1,12 @@
 package es.dam.marioPerez.payAndGo.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.repository.UsuarioRepository;
+import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
 
 @Service
 public class UsuarioService {
@@ -26,13 +27,13 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder encoder;
     
-//    public UsuarioService (UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
-//        this.usuarioRepository = usuarioRepository;
-//        this.encoder = encoder;
-//    }
     
     
     public Usuario registrar(Usuario usuario) {
+    	if (usuario.getRol()==UsuarioRol.CLIENTE) {
+        	usuario.setPassword(encoder.encode(usuario.getPassword()));
+    	}
+
         return usuarioRepository.save(usuario);
     }
     
@@ -63,8 +64,12 @@ public class UsuarioService {
     		throw new RuntimeException("Usuario no encontrado");
     	}
     	
-        if (!encoder.matches(usuario.getPassword(), usuarioDB.getPassword()) && usuario.getRol().equals(usuarioDB.getRol())) {
-        	throw new RuntimeException("Password incorrecto");
+    	if (!usuarioDB.getRol().equals(usuario.getRol())) {
+    		throw new RuntimeException("Perfil de usuario distinto");
+    	}
+    	
+        if (!encoder.matches(usuario.getPassword(), usuarioDB.getPassword())) {
+        	throw new RuntimeException("Password incorrecta");
         }
         return usuarioDB;
     	   
@@ -75,13 +80,18 @@ public class UsuarioService {
 		
 		return usuarioRepository.findById(id);
 	}
+	
+	public Usuario obtenerUsuarioPorUsername(String username) {
+		LOGGER.trace("Accediendo a la lectura de usuario por username");
+		
+		return usuarioRepository.findByuserName(username);
+	}
     
     
-	public Page<Usuario> obtenerUsuariosPorRol (String rol, Pageable pageable){
-		LOGGER.trace("Accediendo a la lectura de usuarios por Rol");
+	public List<Usuario> obtenerUsuariosPorRol (String rol){
+		LOGGER.trace("Accediendo a la lectura de usuarios por Rol");		
 		
-		
-		return usuarioRepository.findUsuariosByRol(rol, pageable);
+		return usuarioRepository.findUsuariosByRol(UsuarioRol.valueOf(rol));
 	}
 
 	public Usuario actualizarUsuario(long id, Usuario usuario) {
@@ -96,6 +106,9 @@ public class UsuarioService {
 		usuarioParaActualizar.get().setNombre(usuario.getNombre());
 		usuarioParaActualizar.get().setApellidos(usuario.getApellidos());
 		usuarioParaActualizar.get().setUserName(usuario.getUserName());
+		if (usuario.getPassword()==null) {
+			usuarioParaActualizar.get().setPassword(null);
+		}
 		
 		if (StringUtils.isNotBlank(usuario.getPassword())) {
 			usuarioParaActualizar.get().setPassword(null);
@@ -108,7 +121,14 @@ public class UsuarioService {
 	public void eliminarUsuario(long id) {
 		LOGGER.trace("Eliminando el usuario");
 		
-		usuarioRepository.deleteById(id);
+		Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+		
+		if (usuarioOpt.isEmpty()) {
+			throw new RuntimeException("El usuario no existe");
+		}
+		Usuario usuarioDB = usuarioOpt.get();
+		usuarioDB.setBorrado(true);
+		usuarioRepository.save(usuarioDB);
 	}
 
     

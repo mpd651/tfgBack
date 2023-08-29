@@ -1,25 +1,32 @@
 package es.dam.marioPerez.payAndGo.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import es.dam.marioPerez.payAndGo.dto.PedidoDto;
 import es.dam.marioPerez.payAndGo.model.ActualizacionPedido;
 import es.dam.marioPerez.payAndGo.model.Mesa;
 import es.dam.marioPerez.payAndGo.model.Pedido;
 import es.dam.marioPerez.payAndGo.model.ProductosPedido;
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.repository.ActualizacionPedidoRepository;
+import es.dam.marioPerez.payAndGo.repository.MesaRepository;
 import es.dam.marioPerez.payAndGo.repository.PedidoRepository;
+import es.dam.marioPerez.payAndGo.repository.ProductoRepository;
+import es.dam.marioPerez.payAndGo.repository.ProductosPedidoRepository;
 import es.dam.marioPerez.payAndGo.repository.UsuarioRepository;
 import es.dam.marioPerez.payAndGo.utils.ActualizacionEnum;
+import es.dam.marioPerez.payAndGo.utils.DtoTransformer;
 import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
 
 @Service
@@ -27,6 +34,9 @@ public class PedidoService {
 
 	private static final Logger LOGGER = LogManager.getLogger(PedidoService.class);
 
+	@Autowired
+	private ProductosPedidoRepository productosPedidoRepository; 
+	
 	@Autowired
 	private PedidoRepository pedidoRepository;
 	
@@ -36,6 +46,12 @@ public class PedidoService {
 	@Autowired
 	private ActualizacionPedidoRepository actualizacionPedidoRepository;
 	
+	@Autowired
+	private MesaRepository mesaRepository;
+	
+	@Autowired
+	private ProductoRepository productoRepository;
+	
 	public Pedido crearPedido(long usuarioId, Pedido pedido) {
         
 		Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
@@ -44,25 +60,28 @@ public class PedidoService {
 			throw new RuntimeException("El usuario no existe");
 		}
 		Usuario usuario = usuarioOpt.get();
-		
+				
 		if (usuario.getRol().equals(UsuarioRol.CLIENTE)) {
 			pedido.setAsignadoCamarero(false);
+		}else {
+			pedido.setAsignadoCamarero(true);
 		}
-		
 		pedido.setFechaApertura(LocalDateTime.now());
-		
-		List<ProductosPedido> productosPedido = pedido.getProductosPedidos();
-		
-		float importe = 0;
-		for (ProductosPedido prodPedido: productosPedido) {
-			importe = importe + prodPedido.getProducto().getPrecio() * prodPedido.getCantidad();
-		}
-		pedido.setImporte(importe);
 		pedido.setPagado(false);
 		pedido.setAnulado(false);
 		
 		Pedido pedidoBD = pedidoRepository.save(pedido);
 		
+		float importe = 0;
+		for (ProductosPedido prodPedido: pedido.getProductosPedidos()) {	
+			prodPedido.setPedido(pedidoBD);
+			prodPedido.setHora(LocalDateTime.now());
+			productosPedidoRepository.save(prodPedido);
+			
+			importe = importe + prodPedido.getProducto().getPrecio() * prodPedido.getCantidad();
+		}
+		pedidoBD.setImporte(importe);
+
 		ActualizacionPedido actualizacion = new ActualizacionPedido();
 		actualizacion.setFecha(LocalDateTime.now());
 		actualizacion.setPedido(pedidoBD);
@@ -70,39 +89,66 @@ public class PedidoService {
 		actualizacion.setMotivo(ActualizacionEnum.CREAR);
 		
 		actualizacionPedidoRepository.save(actualizacion);
-		
-		
 		return pedidoBD;
 	}
 	
-	public Page<Pedido> obtenerTodosLosPedidos (Pageable pageable){
+	public List<PedidoDto> obtenerTodosLosPedidos (){
 		LOGGER.trace("Accediendo a la lectura de Pedidos");
 		
-		return pedidoRepository.findAll(pageable);
+		List<Pedido> pedidos = pedidoRepository.findPedidosActivos();
+		
+		List<PedidoDto> dtos = new ArrayList<PedidoDto>();
+		for (Pedido pedido: pedidos) {
+			dtos.add(DtoTransformer.pedidoToDto(pedido));
+		}
+		return dtos;
 	}
 	
-	public Optional<Pedido> obtenerPedidoPorId(long id) {
+	public PedidoDto obtenerPedidoPorId(long id) {
 		LOGGER.trace("Accediendo a la lectura de Pedidos por id");
 		
-		return pedidoRepository.findById(id);
-	}
-	
-	public Pedido obtenerPedidoPorMesaId(Mesa mesa) {
-		LOGGER.trace("Accediendo a la lectura de Pedidos por mesa id");
+		Optional<Pedido> pedidoOpt = pedidoRepository.findById(id);
 		
-		Optional<Pedido> pedidoOpt = pedidoRepository.findByMesaActivos(mesa, LocalDateTime.now().toLocalDate());
-		
-		if (pedidoOpt.isEmpty()) {
-			return null;
+		if (!pedidoOpt.isEmpty()) {
+			return DtoTransformer.pedidoToDto(pedidoOpt.get());
 		}else {
-			return pedidoOpt.get();
+			return null;
 		}
 	}
 	
-	public List<Pedido> findPedidoClientes(){
+	public PedidoDto obtenerPedidoPorMesaId(long mesaId) {
+		LOGGER.trace("Accediendo a la lectura de Pedidos por mesa id");
+		
+		Optional<Mesa> mesaOpt = mesaRepository.findById(mesaId);
+		
+		if (mesaOpt.isEmpty()) {
+			throw new RuntimeException("No se ha ecnontrado la mesa");
+		}
+		Mesa mesa = mesaOpt.get();
+		
+		Optional<Pedido> pedidoOpt = pedidoRepository.findByMesaActivos(mesa, Date.from(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC)));
+		
+		if (pedidoOpt.isEmpty()) {
+			Pedido pedido = new Pedido();
+			pedido.setId(-1);
+			pedido.setMesa(mesa);
+			pedido.setAnulado(false);
+			return DtoTransformer.pedidoToDto(pedido);
+		}else {
+			return DtoTransformer.pedidoToDto(pedidoOpt.get());
+		}
+	}
+	
+	public List<PedidoDto> findPedidoClientes(){
 		LOGGER.trace("Accediendo a la lectura de Pedidos de clientes sin atender");
 		
-		return pedidoRepository.findPedidosClientes(LocalDateTime.now().toLocalDate());
+		List<Pedido> pedidos =  pedidoRepository.findPedidosClientes(Date.from(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC)));
+		
+		List<PedidoDto> dtos = new ArrayList<PedidoDto>();
+		for (Pedido pedido: pedidos) {
+			dtos.add(DtoTransformer.pedidoToDto(pedido));
+		}
+		return dtos;
 
 	}
 	
@@ -146,12 +192,14 @@ public class PedidoService {
 		if (usuario.getRol().equals(UsuarioRol.CLIENTE)) {
 			pedidoBD.setAsignadoCamarero(false);
 		}
+					
+		float importe = usuario.getRol()==UsuarioRol.CAMARERO? 0 : pedidoBD.getImporte();
+		
+		for (ProductosPedido prodPedido: pedido.getProductosPedidos()) {	
+			prodPedido.setPedido(pedidoBD);
+			prodPedido.setHora(LocalDateTime.now());
+			productosPedidoRepository.save(prodPedido);
 			
-		pedidoBD.setProductosPedidos(pedido.getProductosPedidos());
-		
-		float importe = 0;
-		
-		for (ProductosPedido prodPedido: pedidoBD.getProductosPedidos()) {
 			importe = importe + prodPedido.getProducto().getPrecio() * prodPedido.getCantidad();
 		}
 		pedidoBD.setImporte(importe);
@@ -176,15 +224,33 @@ public class PedidoService {
 		if (pedidoOpt.isEmpty()) {
 			throw new RuntimeException("El pedido no existe");
 		}
-		Pedido pedidoBD = pedidoOpt.get();
-		pedidoBD.setPagado(true);
-		pedidoBD.setFormaPago(pedido.getFormaPago());
-		pedidoBD.setFechaCierre(LocalDateTime.now());
 		
 		Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
 		if (usuarioOpt.isEmpty()) {
 			throw new RuntimeException("El usuario no existe");
 		}
+		
+		Pedido pedidoBD = pedidoOpt.get();
+		pedidoBD.setPagado(true);
+		pedidoBD.setFechaCierre(LocalDateTime.now());
+		
+		
+		float importe = 0;
+
+		for (ProductosPedido prodPedido: pedido.getProductosPedidos()) {	
+			prodPedido.setPedido(pedidoBD);
+			if (prodPedido.getProductoPedidoid()==0) {
+				prodPedido.setHora(LocalDateTime.now());
+
+			}
+			productosPedidoRepository.save(prodPedido);
+			
+			importe = importe + prodPedido.getProducto().getPrecio() * prodPedido.getCantidad();
+		}
+		pedidoBD.setImporte(importe);
+		
+		
+				
 		Usuario usuario = usuarioOpt.get();
 		
 		ActualizacionPedido ap = new ActualizacionPedido();
@@ -206,15 +272,17 @@ public class PedidoService {
 		if (pedidoOpt.isEmpty()) {
 			throw new RuntimeException("El pedido no existe");
 		}
-		Pedido pedidoBD = pedidoOpt.get();
-		pedidoBD.setAnulado(true);
-		pedidoBD.setFechaCierre(LocalDateTime.now());
-
 		
 		Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
 		if (usuarioOpt.isEmpty()) {
 			throw new RuntimeException("El usuario no existe");
 		}
+		
+		Pedido pedidoBD = pedidoOpt.get();
+		pedidoBD.setAnulado(true);
+		pedidoBD.setFechaCierre(LocalDateTime.now());
+		
+				
 		Usuario usuario = usuarioOpt.get();
 		
 		ActualizacionPedido ap = new ActualizacionPedido();

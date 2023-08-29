@@ -1,13 +1,10 @@
 package es.dam.marioPerez.payAndGo.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import es.dam.marioPerez.payAndGo.model.Mesa;
+import es.dam.marioPerez.payAndGo.dto.PedidoDto;
 import es.dam.marioPerez.payAndGo.model.Pedido;
 import es.dam.marioPerez.payAndGo.service.PedidoService;
 
@@ -34,92 +31,82 @@ public class PedidoController {
 	private PedidoService pedidoService;
 	
 	@PostMapping("/crear/usuarioId")
-	public ResponseEntity<Pedido> crearPedido(@RequestParam (name = "usuarioId") Long usuarioId ,@Validated @RequestBody Pedido pedido) {
+	public ResponseEntity<Long> crearPedido(@RequestParam (name = "usuarioId") Long usuarioId ,@Validated @RequestBody Pedido pedido) {
 		LOGGER.trace("Accediendo al controlador de creación de un pedido nuevo");
 		
-		Pedido pedidoGuardado = pedidoService.crearPedido(usuarioId, pedido);
+		Pedido p = pedidoService.crearPedido(usuarioId, pedido);
 		
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.contentType(MediaType.APPLICATION_JSON)
-				.body(pedidoGuardado);
+				.body(p.getId());
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<Pedido>> obtenerTodosLosPedidos(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-		
-		Pageable pageable = PageRequest.of(page, size);
-		
+	public ResponseEntity<List<PedidoDto>> obtenerTodosLosPedidos(){
+				
 		LOGGER.trace("Accediendo al controlador de obtencion de pedidos disponibles");
 		
-		List<Pedido> pedidos = pedidoService.obtenerTodosLosPedidos(pageable).getContent();
-
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidos);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.obtenerTodosLosPedidos());
 	}
 	
 	@GetMapping("/id")
-	public ResponseEntity<Pedido> obtenerPedidoPorId(@RequestParam(name = "id") long id){
+	public ResponseEntity<PedidoDto> obtenerPedidoPorId(@RequestParam(name = "id") long id){
 		
 		LOGGER.error("Accediendo al controlador de obtencion de pedido por id");
 		
-		Optional<Pedido> pedidoOpt = pedidoService.obtenerPedidoPorId(id);
-		
-		if (!pedidoOpt.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoOpt.get());
-		}else {
-			return null;
-		}
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.obtenerPedidoPorId(id));
 	}
 	
 	@GetMapping("/list/clientes")
-	public ResponseEntity<List<Pedido>> obtenerListaPedidosClientes(){
+	public ResponseEntity<List<PedidoDto>> obtenerListaPedidosClientes(){
 		
 		LOGGER.error("Accediendo al controlador de obtencion de pedidos por clientes");
 		
 		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.findPedidoClientes());
 	}
 	
-	@PostMapping("/id/asignarCamarero")
-	public ResponseEntity<Pedido> asignarCamarero(@RequestParam(name = "id") long id){
+	@PutMapping("/pedidoId/asignarCamarero")
+	public void asignarCamarero(@RequestParam(name = "pedidoId") long id){
 		LOGGER.error("Accediendo al controlador para asignar camarero a pedido de un cliente");
-
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.asignarCamarero(id));
+		pedidoService.asignarCamarero(id);
 	}
 	
 	@GetMapping("/mesa")
-	public ResponseEntity<Pedido> obtenerPedidoPorMesaActivo(@RequestBody Mesa mesa){
+	public ResponseEntity<PedidoDto> obtenerPedidoPorMesaActivo(@RequestParam (name="mesaId")long mesaId){
 		
 		LOGGER.error("Accediendo al controlador de obtencion de pedido por mesa");
 				
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.obtenerPedidoPorMesaId(mesa));
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.obtenerPedidoPorMesaId(mesaId));
 	}
 	
 	@PutMapping("/actualizarPedido/usuarioId/pedidoId")
-	public ResponseEntity<Pedido> actualizarPedido(@RequestParam (name = "usuarioId") Long usuarioId, @RequestParam (name = "pedidoId") Long pedidoId, @RequestBody Pedido pedido){
+	public ResponseEntity<Long> actualizarPedido(@RequestParam (name = "usuarioId") Long usuarioId, @RequestParam (name = "pedidoId") Long pedidoId, @RequestBody Pedido pedido){
 		LOGGER.error("Accediendo al controlador de actualizacion de pedido");
 		
-		Pedido pedidoGuardado =  pedidoService.actualizarPedido(usuarioId, pedidoId, pedido);
+		Pedido pedidoBD = pedidoService.actualizarPedido(usuarioId, pedidoId, pedido);
 		
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.contentType(MediaType.APPLICATION_JSON)
-				.body(pedidoGuardado);
+				.body(pedidoBD.getId());
 
 	}
 	
+	
 	@PutMapping("/pagarPedido/usuarioId")
-	public ResponseEntity<Pedido> pagarPedido(@RequestParam (name = "usuarioId") Long usuarioId, @RequestBody Pedido pedido ){
+	public void pagarPedido(@RequestParam (name = "usuarioId") Long usuarioId, @RequestBody Pedido pedido ){
 		LOGGER.error("Accediendo al controlador de pagar pedido");
 		
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.pagarPedido(usuarioId, pedido));
+		pedidoService.pagarPedido(usuarioId, pedido);
 
 	}
 	
 	@PutMapping("/anularPedido/usuarioId/pedidoId")
-	public ResponseEntity<Pedido> anularPedido(@RequestParam (name = "usuarioId") Long usuarioId, @RequestParam (name = "pedidoId") Long pedidoId ){
+	public void anularPedido(@RequestParam (name = "usuarioId") Long usuarioId, @RequestParam (name = "pedidoId") Long pedidoId ){
 		LOGGER.error("Accediendo al controlador de anular pedido");
 		
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(pedidoService.anularPedido(usuarioId, pedidoId));
+		pedidoService.anularPedido(usuarioId, pedidoId);
 
 	}
 }

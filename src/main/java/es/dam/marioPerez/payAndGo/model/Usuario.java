@@ -2,10 +2,15 @@ package es.dam.marioPerez.payAndGo.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
 
@@ -26,6 +31,9 @@ public class Usuario {
 	
 	private String password;
 	
+	private boolean borrado;
+	
+	@Enumerated(EnumType.STRING)
 	private UsuarioRol rol;
 
 	public long getId() {
@@ -75,6 +83,16 @@ public class Usuario {
 	public void setRol(UsuarioRol rol) {
 		this.rol = rol;
 	}
+
+	public boolean isBorrado() {
+		return borrado;
+	}
+
+	public void setBorrado(boolean borrado) {
+		this.borrado = borrado;
+	}
+	
+	
 	
 	
 	

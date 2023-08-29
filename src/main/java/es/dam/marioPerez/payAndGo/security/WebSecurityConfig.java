@@ -15,12 +15,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
-//        http.authorizeRequests()
-//                .antMatchers("/studentInfo").authenticated()
-//                .antMatchers("/register").permitAll()
-//                .antMatchers("/getStudentRoles").hasAuthority("ROLE_WRITE")
-//                .and()
-//                .httpBasic();
+        http.authorizeRequests()
+//                .antMatchers("/api/v1/usuario/lista").authenticated()
+                .antMatchers("/api/v1/usuario/login").permitAll()
+                .antMatchers("/api/v1/usuario/registrarPassword").permitAll()
+//                .antMatchers("/api/v1/usuario/lista").hasAuthority("ADMINISTRADOR")
+                .and()
+                .httpBasic();
     }
 
 	@Bean

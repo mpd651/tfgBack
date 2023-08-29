@@ -1,6 +1,6 @@
 package es.dam.marioPerez.payAndGo.repository;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,10 +13,12 @@ import es.dam.marioPerez.payAndGo.model.Pedido;
 
 public interface PedidoRepository extends JpaRepository<Pedido, Long>{
 	
-	@Query("SELECT p FROM Pedido p inner join ActualizacionPedido ap on p.id = ap.pedido WHERE p.asignadoCamarero = false AND p.pagado = false AND p.anulado = false AND p.fechaApertura LIKE :today ORDER BY ap.fecha")
-	public List<Pedido> findPedidosClientes(@Param("today")LocalDate today);	
+	@Query("SELECT p FROM Pedido p inner join ActualizacionPedido ap on p.id = ap.pedido.id WHERE p.asignadoCamarero = false AND p.pagado = false AND p.anulado = false AND FUNCTION('DATE', p.fechaApertura) = :today ORDER BY ap.fecha")
+	public List<Pedido> findPedidosClientes(@Param("today")Date today);	
 
-	@Query("SELECT p FROM Pedido p WHERE p.mesa = :mesa AND p.pagado = false AND p.anulado = false AND p.fechaApertura LIKE :today ORDER BY p.fechaApertura")
-	public Optional<Pedido> findByMesaActivos(@Param("mesa")Mesa mesa, @Param("today")LocalDate today);	
+	@Query("SELECT p FROM Pedido p WHERE p.mesa = :mesa AND p.pagado = false AND p.anulado = false AND FUNCTION('DATE', p.fechaApertura) = :today ORDER BY p.fechaApertura")
+	public Optional<Pedido> findByMesaActivos(@Param("mesa")Mesa mesa, @Param("today")Date today);	
 
+	@Query("SELECT p FROM Pedido p WHERE p.anulado = false")
+	public List<Pedido> findPedidosActivos();
 }

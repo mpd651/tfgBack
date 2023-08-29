@@ -1,16 +1,15 @@
 package es.dam.marioPerez.payAndGo.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import es.dam.marioPerez.payAndGo.model.Categoria;
-import es.dam.marioPerez.payAndGo.model.Producto;
 import es.dam.marioPerez.payAndGo.repository.CategoriaRepository;
 
 @Service
@@ -25,10 +24,10 @@ public class CategoriaService {
         return categoriaRepository.save(categoria);
 	}
 	
-	public Page<Categoria> obtenerTodasLasCategorias (Pageable pageable){
+	public List<Categoria> obtenerTodasLasCategorias (){
 		LOGGER.trace("Accediendo a la lectura de categorias");
 		
-		return categoriaRepository.findAll(pageable);
+		return categoriaRepository.findCategoriaActivas();
 	}
 	
 	public Optional<Categoria> obtenerCategoriaPorId(long id) {
@@ -53,7 +52,15 @@ public class CategoriaService {
 	
 	public void eliminarCategoria(long id) {
 		LOGGER.trace("Eliminando la categoria");
+				
+		Optional<Categoria> categoriaOpt = categoriaRepository.findById(id);
 		
-		categoriaRepository.deleteById(id);
+		if (categoriaOpt.isEmpty()) {
+			throw new RuntimeException("La categoria no existe");
+		}
+		Categoria categoriaBD = categoriaOpt.get();
+		categoriaBD.setBorrado(true);
+		categoriaRepository.save(categoriaBD);
 	}
+
 }

@@ -10,13 +10,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 @Entity
 @Table(name="productos_pedido")
 public class ProductosPedido {
 	
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
-    long id;
+    private long productoPedidoid;
     
     @ManyToOne
     @JoinColumn(name = "producto_id")
@@ -25,9 +29,7 @@ public class ProductosPedido {
     @ManyToOne
     @JoinColumn(name = "pedido_id")
     private Pedido pedido;
-    
-    private boolean servido;
-    
+        
     private int cantidad;
     
     private LocalDateTime hora;
@@ -49,12 +51,12 @@ public class ProductosPedido {
 	}
 
 
-	public Long getId() {
-		return id;
+	public long getProductoPedidoid() {
+		return productoPedidoid;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setProductoPedidoid(long productoPedidoid) {
+		this.productoPedidoid = productoPedidoid;
 	}
 
 	public Producto getProducto() {
@@ -73,13 +75,6 @@ public class ProductosPedido {
 		this.pedido = pedido;
 	}
 
-	public boolean isServido() {
-		return servido;
-	}
-
-	public void setServido(boolean servido) {
-		this.servido = servido;
-	}
     
 	
     

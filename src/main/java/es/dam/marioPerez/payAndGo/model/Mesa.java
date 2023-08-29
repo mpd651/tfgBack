@@ -14,10 +14,11 @@ public class Mesa {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private long id;
-	
-	@Column(name = "numero_mesa")
+
+    @Column(name = "numero_mesa", unique=true)
 	private int numeroMesa;
 		
+    private boolean borrado;
 
 	public long getId() {
 		return id;
@@ -34,6 +35,15 @@ public class Mesa {
 	public void setNumeroMesa(int numeroMesa) {
 		this.numeroMesa = numeroMesa;
 	}
+
+	public boolean isBorrado() {
+		return borrado;
+	}
+
+	public void setBorrado(boolean borrado) {
+		this.borrado = borrado;
+	}
+	
 	
 	
 }

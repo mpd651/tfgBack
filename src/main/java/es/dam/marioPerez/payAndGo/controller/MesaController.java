@@ -47,15 +47,11 @@ public class MesaController {
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<Mesa>> obtenerTodasLasMesas(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-		
-		Pageable pageable = PageRequest.of(page, size);
-		
+	public ResponseEntity<List<Mesa>> obtenerTodasLasMesas(){
+				
 		LOGGER.trace("Accediendo al controlador de obtencion de mesas disponibles");
 		
-		List<Mesa> mesas = mesaService.obtenerTodasLasMesas(pageable).getContent();
-
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(mesas);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(mesaService.obtenerTodasLasMesas());
 	}
 	
 	@GetMapping("/id")
@@ -89,7 +85,7 @@ public class MesaController {
 	public void eliminarMesa(@RequestParam long id) {
 
 		LOGGER.trace("Accediendo al controlador de eliminación de una mesa");
-
+		
 		mesaService.eliminarMesa(id);
 	}
 }

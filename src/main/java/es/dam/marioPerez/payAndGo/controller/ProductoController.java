@@ -6,8 +6,6 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.dam.marioPerez.payAndGo.dto.ProductoDto;
 import es.dam.marioPerez.payAndGo.model.Producto;
 import es.dam.marioPerez.payAndGo.service.ProductoService;
 
@@ -35,52 +34,36 @@ public class ProductoController {
 	private ProductoService productoService;
 	
 	@PostMapping
-	public ResponseEntity<Producto> crearProducto(@Validated @RequestBody Producto producto) {
+	public void crearProducto(@Validated @RequestBody Producto producto) {
 		LOGGER.trace("Accediendo al controlador de creación de un producto nuevo");
 		
-		Producto productoGuardado = productoService.crearProducto(producto);
-		
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.contentType(MediaType.APPLICATION_JSON)
-				.body(productoGuardado);
+		productoService.crearProducto(producto);
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<Producto>> obtenerTodosLosProductos(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-		
-		Pageable pageable = PageRequest.of(page, size);
-		
+	public ResponseEntity<List<ProductoDto>> obtenerTodosLosProductos(){
+				
 		LOGGER.trace("Accediendo al controlador de obtencion de productos disponibles");
 		
-		List<Producto> productos = productoService.obtenerTodosLosProductos(pageable).getContent();
-
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productos);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productoService.obtenerTodosLosProductos());
 	}
 	
 	@GetMapping("/id")
-	public ResponseEntity<Producto> obtenerProductoPorId(@RequestParam(name = "id") long id){
+	public ResponseEntity<ProductoDto> obtenerProductoPorId(@RequestParam(name = "id") long id){
 		
 		LOGGER.error("Accediendo al controlador de obtencion de producto por id");
 		
-		Optional<Producto> productoOpt = productoService.obtenerProductoPorId(id);
-		
-		if (!productoOpt.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productoOpt.get());
-		}else {
-			return null;
-		}
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productoService.obtenerProductoPorId(id));
+
 	}
 	
 	@PutMapping("/modificar")
-	public ResponseEntity<Producto> actualizarProducto(@RequestParam long id, @Validated @RequestBody Producto producto) {
+	public void actualizarProducto(@RequestParam long id, @Validated @RequestBody Producto producto) {
 
 		LOGGER.trace("Accediendo al controlador de modificación de un Producto");
 
 		
-		Producto productoModificado = productoService.actualizarProducto(id, producto);
-
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productoModificado);
+		productoService.actualizarProducto(id, producto);
 
 	}
 	
@@ -94,13 +77,13 @@ public class ProductoController {
 	}
 	
 	@GetMapping("/categoria/categoriaId")
-	public ResponseEntity<List<Producto>> obtenerProductosPorCategoria(@RequestParam(name = "categoriaId") long categoriaId){
+	public ResponseEntity<List<ProductoDto>> obtenerProductosPorCategoria(@RequestParam(name = "categoriaId") long categoriaId){
 				
 		LOGGER.trace("Accediendo al controlador de obtencion de productos por categoria");
 		
-		List<Producto> productos = productoService.obtenerProductosPorCategoria(categoriaId);
+		List<ProductoDto> productosDto = productoService.obtenerProductosPorCategoria(categoriaId);
 
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productos);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(productosDto);
 	}
 	
 }

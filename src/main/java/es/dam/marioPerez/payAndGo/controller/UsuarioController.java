@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.service.UsuarioService;
@@ -35,41 +36,33 @@ public class UsuarioController {
 
 	@Autowired
 	private UsuarioService usuarioService;
-   
+	
     
+    @PostMapping("/registrarPassword")
+    public ResponseEntity<Usuario> registrarPasswordAdministrador(@RequestBody Usuario usuario) {    
+    	try{
+    		usuarioService.registrarPassword(usuario);
+    		
+    		return ResponseEntity
+    				.status(HttpStatus.CREATED)
+    				.contentType(MediaType.APPLICATION_JSON)
+    				.body(usuario);
+    		
+    	}catch (BadCredentialsException ex) {
+    		throw new ResponseStatusException(
+    		           HttpStatus.NOT_FOUND, ex.getMessage(), ex);
+    	}
+    	
+    	
+
+    }
     
     @PostMapping("/registrar")
-    public ResponseEntity<Usuario> registrarAdministrador(@RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> registrarUsuario(@RequestBody Usuario usuario) {
     	Usuario usuario1 = new Usuario();
     	usuario1.setUserName(usuario.getUserName());
     	usuario1.setRol(usuario.getRol());
-    	
-    	usuarioService.registrar(usuario1);
-    	
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.contentType(MediaType.APPLICATION_JSON)
-				.body(usuario1);
-    }
-    
-    
-    
-    @PostMapping("/registrarPassword")
-    public ResponseEntity<Usuario> registrarPasswordAdministrador(@RequestBody Usuario usuario) {    	
-    	usuarioService.registrarPassword(usuario);
-    	
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.contentType(MediaType.APPLICATION_JSON)
-				.body(usuario);
-    }
-    
-    @PostMapping("/cliente/registrar")
-    public ResponseEntity<Usuario> registrarCliente(@RequestBody Usuario usuario) {
-    	Usuario usuario1 = new Usuario();
-    	usuario1.setUserName(usuario.getUserName());
-    	usuario1.setRol(UsuarioRol.CLIENTE);
-    	usuario1.setPassword(usuario1.getPassword());
+    	usuario1.setPassword(usuario.getPassword());
     	usuario1.setNombre(usuario.getNombre());
     	usuario1.setApellidos(usuario.getApellidos());
     	
@@ -84,10 +77,16 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
     	
-    	return ResponseEntity
+    	try {
+    		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(usuarioService.login(usuario));
+    	
+    	}catch (RuntimeException ex) {
+    		throw new ResponseStatusException(
+ 		           HttpStatus.NOT_FOUND, ex.getMessage(), ex);
+    	}
     	
     }
     
@@ -104,17 +103,22 @@ public class UsuarioController {
 			return null;
 		}
 	}
+	
+	@GetMapping("/username")
+	public ResponseEntity<Usuario> obtenerUsuarioPorUsername(@RequestParam(name = "username") String username){
+		
+		LOGGER.error("Accediendo al controlador de obtencion de Usuario por username");
+		
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(usuarioService.obtenerUsuarioPorUsername(username));
+	}
+	
     
-	@GetMapping("/lista/rol")
-	public ResponseEntity<List<Usuario>> obtenerUsuariosPorRol(@RequestParam String rol,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-		
-		Pageable pageable = PageRequest.of(page, size);
-		
+	@GetMapping("/lista")
+	public ResponseEntity<List<Usuario>> obtenerUsuariosPorRol(@RequestParam String rol){
+				
 		LOGGER.trace("Accediendo al controlador de obtencion de usuarios disponibles por rol");
 		
-		List<Usuario> usuarios = usuarioService.obtenerUsuariosPorRol(rol, pageable).getContent();
-
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(usuarios);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(usuarioService.obtenerUsuariosPorRol(rol));
 	}
 	
 	@PutMapping("/modificar")

@@ -12,10 +12,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.repository.UsuarioRepository;
 
+@Component
 public class WebAuthenticationProvider implements AuthenticationProvider{
 	
 	@Autowired
@@ -23,11 +25,7 @@ public class WebAuthenticationProvider implements AuthenticationProvider{
 
 	@Autowired
     private PasswordEncoder encoder;
-    
-//    public WebAuthenticationProvider(UsuarioRepository repository, PasswordEncoder encoder) {
-//        this.encoder = encoder;
-//        this.repository = repository;
-//    }
+
     
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {

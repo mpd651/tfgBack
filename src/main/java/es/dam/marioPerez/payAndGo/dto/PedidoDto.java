@@ -1,39 +1,15 @@
-package es.dam.marioPerez.payAndGo.model;
+package es.dam.marioPerez.payAndGo.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import es.dam.marioPerez.payAndGo.model.Mesa;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+public class PedidoDto {
 
-@Entity
-@Table(name="pedidos")
-public class Pedido {
-
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	@ManyToOne
-    @JoinColumn(name="mesa_id", nullable=false)
 	private Mesa mesa;
-	
-	@OneToMany(mappedBy = "pedido", fetch = FetchType.LAZY)
-	@JsonIgnore
-	private List<ActualizacionPedido> actualizaciones;
-	
-	@OneToMany(mappedBy = "pedido", fetch = FetchType.LAZY)
-	List<ProductosPedido> productosPedidos;
-	
+			
 	private float importe;
 	
 	private LocalDateTime fechaApertura;
@@ -70,14 +46,6 @@ public class Pedido {
 		this.importe = importe;
 	}
 
-	public List<ActualizacionPedido> getActualizaciones() {
-		return actualizaciones;
-	}
-
-	public void setActualizaciones(List<ActualizacionPedido> actualizaciones) {
-		this.actualizaciones = actualizaciones;
-	}
-
 	public LocalDateTime getFechaApertura() {
 		return fechaApertura;
 	}
@@ -108,14 +76,6 @@ public class Pedido {
 
 	public void setAnulado(boolean anulado) {
 		this.anulado = anulado;
-	}
-
-	public List<ProductosPedido> getProductosPedidos() {
-		return productosPedidos;
-	}
-
-	public void setProductosPedidos(List<ProductosPedido> productosPedidos) {
-		this.productosPedidos = productosPedidos;
 	}
 
 	public boolean isAsignadoCamarero() {
