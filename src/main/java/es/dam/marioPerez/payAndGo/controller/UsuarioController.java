@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -26,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.service.UsuarioService;
+import es.dam.marioPerez.payAndGo.utils.JWTUtil;
 import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
 
 @RestController
@@ -36,6 +38,10 @@ public class UsuarioController {
 
 	@Autowired
 	private UsuarioService usuarioService;
+	
+	@Autowired
+	private JWTUtil jwtUtil;
+	
 	
     
     @PostMapping("/registrarPassword")
@@ -66,7 +72,7 @@ public class UsuarioController {
     	usuario1.setNombre(usuario.getNombre());
     	usuario1.setApellidos(usuario.getApellidos());
     	
-    	Usuario usuarioBD = usuarioService.registrar(usuario1);
+		Usuario usuarioBD = usuarioService.registrar(usuario1);
     	
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
@@ -75,13 +81,15 @@ public class UsuarioController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
+    public ResponseEntity<String> login(@RequestBody Usuario usuario) {
     	
     	try {
+    		
     		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(usuarioService.login(usuario));
+    	
     	
     	}catch (RuntimeException ex) {
     		throw new ResponseStatusException(
@@ -105,11 +113,11 @@ public class UsuarioController {
 	}
 	
 	@GetMapping("/username")
-	public ResponseEntity<Usuario> obtenerUsuarioPorUsername(@RequestParam(name = "username") String username){
+	public ResponseEntity<Usuario> obtenerUsuarioPorUsername(@RequestParam(name = "username") String username, @RequestHeader(value="Authorization") String token){
 		
 		LOGGER.error("Accediendo al controlador de obtencion de Usuario por username");
 		
-		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(usuarioService.obtenerUsuarioPorUsername(username));
+		return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(usuarioService.obtenerUsuarioPorUsername(username, token));
 	}
 	
     

@@ -12,8 +12,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import es.dam.marioPerez.payAndGo.model.Usuario;
 import es.dam.marioPerez.payAndGo.repository.UsuarioRepository;
+import es.dam.marioPerez.payAndGo.utils.JWTUtil;
 import es.dam.marioPerez.payAndGo.utils.UsuarioRol;
 
 @Service
@@ -25,13 +28,18 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 	
     @Autowired
-    private PasswordEncoder encoder;
+	private PasswordEncoder encoder;
+    
+	@Autowired
+	private JWTUtil jwtUtil;
     
     
     
     public Usuario registrar(Usuario usuario) {
     	if (usuario.getRol()==UsuarioRol.CLIENTE) {
-        	usuario.setPassword(encoder.encode(usuario.getPassword()));
+    		Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
+    		String hash = argon2.hash(1, 1024, 1, usuario.getPassword());
+        	usuario.setPassword(hash);
     	}
 
         return usuarioRepository.save(usuario);
@@ -51,15 +59,17 @@ public class UsuarioService {
     	if (!usuarioDB.getRol().equals(usuario.getRol())) {
     		throw new RuntimeException("Perfil de usuario distinto");
     	}
-    	
-    	usuarioDB.setPassword(encoder.encode(usuario.getPassword()));
+    	Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
+		String hash = argon2.hash(1, 1024, 1, usuario.getPassword());
+    	usuario.setPassword(hash);
     	
         return usuarioRepository.save(usuarioDB);
     }
     
-    public Usuario login(Usuario usuario) {
+    public String login(Usuario usuario) {
     	Usuario usuarioDB = usuarioRepository.findByuserName(usuario.getUserName());
-    	
+        Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
+
     	if (usuarioDB == null) {
     		throw new RuntimeException("Usuario no encontrado");
     	}
@@ -68,11 +78,13 @@ public class UsuarioService {
     		throw new RuntimeException("Perfil de usuario distinto");
     	}
     	
-        if (!encoder.matches(usuario.getPassword(), usuarioDB.getPassword())) {
+        if (!argon2.verify(usuarioDB.getPassword(), usuario.getPassword())) {
         	throw new RuntimeException("Password incorrecta");
         }
-        return usuarioDB;
-    	   
+        
+        String token = jwtUtil.create(String.valueOf(usuarioDB.getId()), usuarioDB.getUserName());
+                
+        return token;
     }
     
 	public Optional<Usuario> obtenerUsuarioPorId(long id) {
@@ -81,8 +93,23 @@ public class UsuarioService {
 		return usuarioRepository.findById(id);
 	}
 	
-	public Usuario obtenerUsuarioPorUsername(String username) {
+	public Usuario obtenerUsuarioPorUsername(String username, String token) {
 		LOGGER.trace("Accediendo a la lectura de usuario por username");
+		
+		String userNameLogin = jwtUtil.getValue(token);
+		String idLogin = jwtUtil.getKey(token);
+		
+		if (idLogin == null || userNameLogin == null) {
+		    throw new RuntimeException("Token inválido o sin clave");
+		}
+		
+		Usuario usuarioLogeado = usuarioRepository.findByuserName(userNameLogin);
+		if (usuarioLogeado == null) {
+			throw new RuntimeException("Token invalido");
+		}
+		if (usuarioLogeado.getId() != Long.parseLong(idLogin)) {
+			throw new RuntimeException("Login invalido");
+		}
 		
 		return usuarioRepository.findByuserName(username);
 	}
