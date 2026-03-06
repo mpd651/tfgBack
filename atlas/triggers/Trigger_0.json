@@ -10,7 +10,9 @@
         "match": {},
         "maximum_throughput": false,
         "operation_types": [
-            "INSERT"
+            "INSERT",
+            "UPDATE",
+            "DELETE"
         ],
         "project": {},
         "service_name": "Cluster0",
