@@ -1,0 +1,30 @@
+{
+    "name": "Trigger_0",
+    "type": "DATABASE",
+    "disabled": false,
+    "config": {
+        "collection": "comments",
+        "database": "sample_mflix",
+        "full_document": true,
+        "full_document_before_change": true,
+        "match": {},
+        "maximum_throughput": false,
+        "operation_types": [
+            "INSERT",
+            "UPDATE",
+            "DELETE"
+        ],
+        "project": {},
+        "service_name": "Cluster0",
+        "skip_catchup_events": false,
+        "tolerate_resume_errors": false,
+        "unordered": false
+    },
+    "event_processors": {
+        "FUNCTION": {
+            "config": {
+                "function_name": "Atlas_Triggers_Trigger_0_1771831644"
+            }
+        }
+    }
+}
