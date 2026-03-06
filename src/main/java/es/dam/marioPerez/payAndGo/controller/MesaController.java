@@ -29,6 +29,7 @@ import es.dam.marioPerez.payAndGo.service.MesaService;
 @RequestMapping(path = "/api/v1/mesa")
 public class MesaController {
 
+    // Prueba para hook
 	private static final Logger LOGGER = LogManager.getLogger(MesaController.class);
 
 	@Autowired
